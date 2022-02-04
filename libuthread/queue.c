@@ -4,38 +4,126 @@
 
 #include "queue.h"
 
+// IMPORTANT: struct queue* = queue_t
+
+typedef struct node {
+  void *data;
+	struct node *prev;
+  struct node *next;
+} node;
+
+typedef struct node* node_t;
+
+node_t node_create(void* data) {
+	node_t new_node = (node_t) malloc(sizeof(node));
+	new_node->data = data;
+	new_node->prev = new_node->next = NULL;
+
+	if (!new_node) return NULL;
+	return new_node;
+}
+
 struct queue {
 	/* TODO */
+	int length;
+	node_t head;
+	node_t tail;
 };
 
 queue_t queue_create(void)
 {
 	/* TODO */
-	return NULL;
+	// initialze the queue
+	queue_t new_queue = (queue_t) malloc(sizeof(struct queue));
+	new_queue->length = 0;
+	new_queue->head = new_queue->tail = NULL;
+
+	if (!new_queue) return NULL;
+	return new_queue;
 }
 
 int queue_destroy(queue_t queue)
 {
 	/* TODO */
-	return -1;
+	if (queue == NULL || queue->length != 0) return -1;
+
+	free(queue);
+
+	return 0;
 }
 
 int queue_enqueue(queue_t queue, void *data)
 {
 	/* TODO */
-	return -1;
+	node_t temp = node_create(data);
+
+	if (queue == NULL || data == NULL || !temp) return -1;
+
+	if (queue->head == NULL && queue->tail == NULL) {
+		queue->head = queue->tail = temp;
+	} else {
+		queue->tail->next = temp;
+		temp->prev = queue->tail;
+		queue->tail = temp;
+	}
+	queue->length++;
+
+	return 0;
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
 	/* TODO */
-	return -1;
+	if (queue == NULL || data == NULL || queue->length == 0) return -1;
+
+	node_t temp = queue->head;
+
+	if (queue->head == queue->tail) {
+		data = queue->head->data;
+		queue->head = queue->tail = NULL;
+	} else {
+		data = queue->head->data;
+		queue->head = queue->head->next;
+		queue->head->prev = NULL;
+	}
+
+	queue->length--;
+	free(temp);
+	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO */
-	return -1;
+	if (queue == NULL || data == NULL) return -1;
+
+	node_t temp = queue->head;
+
+	// check if @data is in the queue
+	while (temp->data != data) {
+		if(temp->next == NULL) {
+			return NULL;
+    } else {
+			temp = temp->next;             
+    }
+	}
+	
+	// if @data is in the queue
+	if (queue->head == queue->tail) {
+		queue_dequeue(queue, &data);
+	} else if (temp == queue->head) {
+		queue_dequeue(queue, &data);
+	} else if (temp == queue->tail) {
+		queue->tail = queue->tail->prev;
+		queue->tail->next = NULL;
+	} else {
+		temp->prev->next = temp->next;
+		temp->next->prev = temp->prev;
+	}
+
+	queue->length--;
+	free(temp);
+	return 0;
 }
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
@@ -47,6 +135,8 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 int queue_length(queue_t queue)
 {
 	/* TODO */
-	return -1;
+	if (queue == NULL) return -1;
+
+	return queue->length;
 }
 
