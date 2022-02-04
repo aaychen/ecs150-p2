@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "queue.h"
 
@@ -66,8 +67,8 @@ int queue_enqueue(queue_t queue, void *data)
 		temp->prev = queue->tail;
 		queue->tail = temp;
 	}
+	
 	queue->length++;
-
 	return 0;
 }
 
@@ -79,10 +80,10 @@ int queue_dequeue(queue_t queue, void **data)
 	node_t temp = queue->head;
 
 	if (queue->head == queue->tail) {
-		data = queue->head->data;
+		*data = queue->head->data;
 		queue->head = queue->tail = NULL;
 	} else {
-		data = queue->head->data;
+		*data = queue->head->data;
 		queue->head = queue->head->next;
 		queue->head->prev = NULL;
 	}
@@ -102,7 +103,7 @@ int queue_delete(queue_t queue, void *data)
 	// check if @data is in the queue
 	while (temp->data != data) {
 		if(temp->next == NULL) {
-			return NULL;
+			return -1;
     } else {
 			temp = temp->next;             
     }
@@ -110,9 +111,9 @@ int queue_delete(queue_t queue, void *data)
 	
 	// if @data is in the queue
 	if (queue->head == queue->tail) {
-		queue_dequeue(queue, &data);
+		queue_dequeue(queue, (void**)&data);
 	} else if (temp == queue->head) {
-		queue_dequeue(queue, &data);
+		queue_dequeue(queue, (void**)&data);
 	} else if (temp == queue->tail) {
 		queue->tail = queue->tail->prev;
 		queue->tail->next = NULL;
@@ -126,11 +127,11 @@ int queue_delete(queue_t queue, void *data)
 	return 0;
 }
 
-int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
+/* int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
-	/* TODO */
+	// TODO
 	return -1;
-}
+} */
 
 int queue_length(queue_t queue)
 {
