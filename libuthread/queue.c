@@ -16,7 +16,7 @@ typedef struct node {
 typedef struct node* node_t;
 
 node_t node_create(void* data) {
-	node_t new_node = (node_t) malloc(sizeof(node));
+	node_t new_node = (node_t)malloc(sizeof(node));
 	new_node->data = data;
 	new_node->prev = new_node->next = NULL;
 
@@ -35,7 +35,7 @@ queue_t queue_create(void)
 {
 	/* TODO */
 	// initialze the queue
-	queue_t new_queue = (queue_t) malloc(sizeof(struct queue));
+	queue_t new_queue = (queue_t)malloc(sizeof(struct queue));
 	new_queue->length = 0;
 	new_queue->head = new_queue->tail = NULL;
 
@@ -127,11 +127,28 @@ int queue_delete(queue_t queue, void *data)
 	return 0;
 }
 
-/* int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
+int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
-	// TODO
-	return -1;
-} */
+	/* TODO */
+
+	if (queue == NULL || func == NULL) return -1;
+
+	node_t current = queue->head;
+	node_t next;
+
+	while (current != NULL) {
+		next = current->next;
+
+		if (func(queue, current->data, arg) == 1) {
+			if (current->data != NULL) *data = current->data;
+			break;
+		}
+
+		current = next;
+	}
+
+	return 0;
+}
 
 int queue_length(queue_t queue)
 {
