@@ -140,7 +140,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 		next = current->next;
 
 		if (func(queue, current->data, arg) == 1) {
-			if (current->data != NULL) *data = current->data;
+			if (data != NULL) *data = current->data;
 			break;
 		}
 
