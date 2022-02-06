@@ -22,8 +22,6 @@ void test_create(void)
     queue_t q = queue_create();
 	TEST_ASSERT(q != NULL);
     TEST_ASSERT(queue_length(q) == 0);
-    // TEST_ASSERT(q->head == NULL);
-    // TEST_ASSERT(q->tail == NULL);
 }
 
 /* Enqueue/Dequeue simple */
@@ -52,16 +50,10 @@ void test_enqueue(void)
     TEST_ASSERT(queue_enqueue(q, NULL) == -1);
     TEST_ASSERT(queue_enqueue(q, &data1) == 0);
     TEST_ASSERT(queue_length(q) == 1);
-    // TEST_ASSERT(*(q->head->data) == 10)
-    // TEST_ASSERT(*(q->tail->data) == 10)
     TEST_ASSERT(queue_enqueue(q, &data2) == 0);
     TEST_ASSERT(queue_length(q) == 2);
-    // TEST_ASSERT(*(q->head->data) == 10)
-    // TEST_ASSERT(*(q->tail->data) == 20)
     TEST_ASSERT(queue_enqueue(q, &data3) == 0);
     TEST_ASSERT(queue_length(q) == 3);
-    // TEST_ASSERT(*(q->head->data) == 10)
-    // TEST_ASSERT(*(q->tail->data) == 30)
 }
 
 /* Test dequeueing items */
@@ -82,20 +74,14 @@ void test_dequeue(void)
     TEST_ASSERT(ptr == &data1);
     TEST_ASSERT(*ptr == data1);
     TEST_ASSERT(queue_length(q) == 2);
-    // TEST_ASSERT(*(q->head->data) == 20)
-    // TEST_ASSERT(*(q->tail->data) == 30)
     TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
     TEST_ASSERT(ptr == &data2);
     TEST_ASSERT(*ptr == data2);
     TEST_ASSERT(queue_length(q) == 1);
-    // TEST_ASSERT(*(q->head->data) == 30)
-    // TEST_ASSERT(*(q->tail->data) == 30)
     TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
     TEST_ASSERT(ptr == &data3);
     TEST_ASSERT(*ptr == data3);
     TEST_ASSERT(queue_length(q) == 0);
-    // TEST_ASSERT(*(q->head->data) == NULL)
-    // TEST_ASSERT(*(q->tail->data) == NULL)
 }
 
 /* Test deleting an item */
@@ -114,20 +100,12 @@ void test_delete(void)
     queue_enqueue(q, &data4);
     TEST_ASSERT(queue_delete(q, &data1) == 0);
     TEST_ASSERT(queue_length(q) == 3);
-    // TEST_ASSERT(*(q->head->data) == 20)
-    // TEST_ASSERT(*(q->tail->data) == 40)
     TEST_ASSERT(queue_delete(q, &data4) == 0);
     TEST_ASSERT(queue_length(q) == 2);
-    // TEST_ASSERT(*(q->head->data) == 20)
-    // TEST_ASSERT(*(q->tail->data) == 10)
     TEST_ASSERT(queue_delete(q, &data1) == 0);
     TEST_ASSERT(queue_length(q) == 1);
-    // TEST_ASSERT(*(q->head->data) == 20)
-    // TEST_ASSERT(*(q->tail->data) == 20)
     TEST_ASSERT(queue_delete(q, &data2) == 0);
     TEST_ASSERT(queue_length(q) == 0);
-    // TEST_ASSERT(*(q->head->data) == NULL)
-    // TEST_ASSERT(*(q->tail->data) == NULL)
 }
 
 /* Test destroying a queue */
