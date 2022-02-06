@@ -90,13 +90,14 @@ int queue_dequeue(queue_t queue, void **data)
 
 	queue->length--;
 	free(temp);
+	temp = NULL;
 	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO */
-	if (queue == NULL || data == NULL) return -1;
+	if (queue == NULL || data == NULL || queue->length == 0) return -1;
 
 	node_t temp = queue->head;
 
@@ -110,10 +111,9 @@ int queue_delete(queue_t queue, void *data)
 	}
 	
 	// if @data is in the queue
-	if (queue->head == queue->tail) {
+	if (queue->head == queue->tail || temp == queue->head) {
 		queue_dequeue(queue, (void**)&data);
-	} else if (temp == queue->head) {
-		queue_dequeue(queue, (void**)&data);
+		return 0;
 	} else if (temp == queue->tail) {
 		queue->tail = queue->tail->prev;
 		queue->tail->next = NULL;
@@ -124,13 +124,13 @@ int queue_delete(queue_t queue, void *data)
 
 	queue->length--;
 	free(temp);
+	temp = NULL;
 	return 0;
 }
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
 	/* TODO */
-
 	if (queue == NULL || func == NULL) return -1;
 
 	node_t current = queue->head;
