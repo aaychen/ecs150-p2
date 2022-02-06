@@ -5,8 +5,6 @@
 
 #include "queue.h"
 
-// IMPORTANT: struct queue* = queue_t
-
 typedef struct node {
   void *data;
 	struct node *prev;
@@ -34,7 +32,6 @@ struct queue {
 queue_t queue_create(void)
 {
 	/* TODO */
-	// initialze the queue
 	queue_t new_queue = (queue_t)malloc(sizeof(struct queue));
 	new_queue->length = 0;
 	new_queue->head = new_queue->tail = NULL;
@@ -49,7 +46,7 @@ int queue_destroy(queue_t queue)
 	if (queue == NULL || queue->length != 0) return -1;
 
 	free(queue);
-
+	queue = NULL;
 	return 0;
 }
 
