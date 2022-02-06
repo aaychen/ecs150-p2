@@ -102,7 +102,9 @@ void test_delete(void)
     TEST_ASSERT(queue_length(q) == 3);
     TEST_ASSERT(queue_delete(q, &data4) == 0);
     TEST_ASSERT(queue_length(q) == 2);
-    TEST_ASSERT(queue_delete(q, &data1) == 0);
+    TEST_ASSERT(queue_delete(q, &data1) == -1);
+    TEST_ASSERT(queue_length(q) == 2);
+    TEST_ASSERT(queue_delete(q, &data3) == 0);
     TEST_ASSERT(queue_length(q) == 1);
     TEST_ASSERT(queue_delete(q, &data2) == 0);
     TEST_ASSERT(queue_length(q) == 0);
