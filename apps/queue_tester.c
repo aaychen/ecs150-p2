@@ -126,11 +126,12 @@ void test_destroy(void)
 }
 
 /* Callback function that increments integer items by a certain value (or delete
- * item if item is value 42) */
+ * item if item is value 42). Default increment is 1 (if arg is null).
+ */
 static int inc_item(queue_t q, void *data, void *arg)
 {
     int *a = (int*)data;
-    int inc = (int)(long)arg;
+    int inc = arg != NULL ? (int)(long)arg : 1;
 
     if (*a == 42)
         queue_delete(q, data);
@@ -160,12 +161,18 @@ void test_iterate(void)
 
     queue_t q;
     int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
-    size_t i;
     int *ptr;
 
-    /* Initialize the queue and enqueue items */
-    q = queue_create();
-    for (i = 0; i < sizeof(data) / sizeof(data[0]); i++)
+    q = queue_create(); // initalize the queue
+
+    /* Empty queue case */
+    TEST_ASSERT(queue_iterate(q, inc_item, (void*)1, NULL) == 0);
+    TEST_ASSERT(queue_length(q) == 0);
+    ptr = NULL;
+    TEST_ASSERT(queue_iterate(q, find_item, (void*)5, (void**)&ptr) == 0);
+
+    /* Enqueue items */
+    for (size_t i = 0; i < sizeof(data) / sizeof(data[0]); i++)
         queue_enqueue(q, &data[i]);
 
     /* Add value '1' to every item of the queue, delete item '42' */
@@ -180,9 +187,61 @@ void test_iterate(void)
     TEST_ASSERT(*ptr == 5);
     TEST_ASSERT(ptr == &data[3]);
 
-    /* Null cases */
+    /* Test dequeue until empty to check delete resistance of item '42' */
+    ptr = NULL;
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 8);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 7);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 6);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 5);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 4);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 3);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 2);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 1);
+    TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 0);
+
+}
+
+void test_iterate_empty_queue()
+{
+	fprintf(stderr, "*** TEST iterate_empty_queue ***\n");
+
+    queue_t q = queue_create();
+    int *ptr = NULL;
+
+    TEST_ASSERT(queue_iterate(q, inc_item, (void*)1, NULL) == 0);
+    TEST_ASSERT(queue_length(q) == 0);
+    TEST_ASSERT(queue_iterate(q, find_item, (void*)5, (void**)&ptr) == 0);
+    TEST_ASSERT(queue_length(q) == 0);
+}
+
+void test_iterate_null_arg(void)
+{
+	fprintf(stderr, "*** TEST iterate_null_arg ***\n");
+
+    queue_t q;
+    int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
+
+    /* Initialize queue and enqueue items */
+    q = queue_create();
+    for (size_t i = 0; i < sizeof(data) / sizeof(data[0]); i++)
+        queue_enqueue(q, &data[i]);
+
     TEST_ASSERT(queue_iterate(NULL, NULL, NULL, NULL) == -1);
+    TEST_ASSERT(queue_length(q) == 10);
     TEST_ASSERT(queue_iterate(q, NULL, NULL, NULL) == -1);
+    TEST_ASSERT(queue_length(q) == 10);
+    TEST_ASSERT(queue_iterate(q, inc_item, NULL, NULL) == 0);
+    TEST_ASSERT(data[0] == 2);
+    TEST_ASSERT(queue_length(q) == 9);
 }
 
 /* Test retrieving the length of the queue */
@@ -217,6 +276,8 @@ int main(void)
     test_delete();
     test_destroy();
     test_iterate();
+    test_iterate_empty_queue();
+    test_iterate_null_arg();
     test_length();
 
 	return 0;
