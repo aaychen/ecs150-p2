@@ -28,6 +28,7 @@ typedef tcb* tcb_t;
 
 uthread_t num_thr = 0; // number of threads created 
 queue_t scheduler[NUM_QUEUES];
+tcb_t main_thr; // main thread
 tcb_t curr_thr; // currently active and running thread
 
 int uthread_start(int preempt)
@@ -37,12 +38,11 @@ int uthread_start(int preempt)
 	for (int i = 0; i < NUM_QUEUES; i++) {
 		scheduler[i] = queue_create();
 	}
-	tcb_t main_thr = malloc(sizeof(tcb_t));
+	main_thr = malloc(sizeof(tcb_t));
 	if (main_thr == NULL) return -1;
 	main_thr->tid = num_thr;
 	main_thr->state = RUNNING;
 	main_thr->stack = uthread_ctx_alloc_stack();
-	// if (uthread_ctx_init(&main_thr->ctx, main_thr->stack, uthread_stop)) return -1;
 	curr_thr = main_thr;
 	return 0;
 }
@@ -77,13 +77,18 @@ int uthread_create(uthread_func_t func)
 void uthread_yield(void)
 {
 	/* TODO */
-	tcb_t next_thr;
-	queue_dequeue(scheduler[READY], (void**)&next_thr);
-	uthread_ctx_switch(&curr_thr->ctx, &next_thr->ctx);
-	curr_thr->state = READY;
-	queue_enqueue(scheduler[READY], curr_thr);
-	next_thr->state = RUNNING;
-	curr_thr = next_thr;
+	tcb_t prev_thr = curr_thr;                                             
+	if (queue_dequeue(scheduler[READY], (void**)&curr_thr) == -1) { // if no more threads ready, back to main thread
+		curr_thr = main_thr;
+	}
+	if (prev_thr->state != ZOMBIE) { // round-robin put back into queue if previous thread not a zombie
+		prev_thr->state = READY;
+		queue_enqueue(scheduler[READY], prev_thr);
+	}
+	curr_thr->state = RUNNING;
+	// printf("context switch: T%d to T%d\n", prev_thr->tid, curr_thr->tid);
+	uthread_ctx_switch(&prev_thr->ctx, &curr_thr->ctx);
+	// printf("after context switch\n");
 }
 
 uthread_t uthread_self(void)
@@ -96,13 +101,10 @@ void uthread_exit(int retval)
 {
 	(void)retval;
 	/* TODO */
-	tcb_t next_thr;
-	queue_dequeue(scheduler[READY], (void**)&next_thr);
-	uthread_ctx_switch(&curr_thr->ctx, &next_thr->ctx);
 	curr_thr->state = ZOMBIE;
 	queue_enqueue(scheduler[ZOMBIE], curr_thr);
-	next_thr->state = RUNNING;
-	curr_thr = next_thr;
+	uthread_yield();
+	// printf("this should not print\n");
 }
 
 int uthread_join(uthread_t tid, int *retval)
