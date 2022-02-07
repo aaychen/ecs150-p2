@@ -6,9 +6,9 @@
 #include "queue.h"
 
 typedef struct node {
-  void *data;
+	void *data;
 	struct node *prev;
-  struct node *next;
+	struct node *next;
 } node;
 
 typedef struct node* node_t;
