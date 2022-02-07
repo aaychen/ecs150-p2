@@ -15,10 +15,10 @@ typedef struct node* node_t;
 
 node_t node_create(void* data) {
 	node_t new_node = (node_t)malloc(sizeof(node));
+	if (!new_node) return NULL;
 	new_node->data = data;
 	new_node->prev = new_node->next = NULL;
 
-	if (!new_node) return NULL;
 	return new_node;
 }
 
