@@ -24,26 +24,45 @@ typedef struct TCB {
 	void *stack;
 	uthread_ctx_t ctx;
 	int state;
+	int retval;
 } TCB;
 
+typedef struct TCB* TCB_t;
+
+TCB_t thread_create(int tid, uthread_func_t func) {
+	TCB_t new_thread = (TCB_t)malloc(sizeof(TCB));
+	if (!new_thread) return NULL;
+	new_thread->tid = tid;
+	if (!(new_thread->stack = uthread_ctx_alloc_stack())) return NULL;
+	if (uthread_ctx_init(&new_thread->ctx, new_thread->stack, func) == -1) return NULL;
+	new_thread->state= READY;
+
+	return new_thread;
+}
+
 queue_t q[NUM_QUEUE];
-TCB main_thread;
-TCB running_thread;
+TCB_t main_thread;
+TCB_t running_thread;
+TCB_t temp;
 
 static int destroy_stack_all(queue_t q, void *data, void *arg)
 {
-    TCB *tcb = (TCB*)data;
-		uthread_ctx_destroy_stack(tcb->stack);
+		(void)q; //unused
+		(void)arg; //unused
+    TCB_t* temp = (TCB_t*)data;
+		TCB_t thread = *temp;
+		uthread_ctx_destroy_stack(thread->stack);
 
     return 0;
 }
 
 static int dequeue_all(queue_t q, void *data, void *arg)
 {
+		(void)data; //unused
+		(void)arg; //unused
     int *ptr;
-		if (!(queue_dequeue(q, (void**)&ptr))) return -1;
+		return queue_dequeue(q, (void**)&ptr);
 
-    return 0;
 }
 
 /*
@@ -61,21 +80,20 @@ static int dequeue_all(queue_t q, void *data, void *arg)
 int uthread_start(int preempt)
 {
 	/* TODO */
+	(void)preempt; //unused
+
 	for (int i = 0; i < NUM_QUEUE; i++) {
 		q[i] = queue_create();
 	}
 
-	TCB main;
-	main.tid = 0;
-	if (!(main.stack = uthread_ctx_alloc_stack())) return -1;
-	main.state = RUN;
-
-	running_thread.state = READY;
+	main_thread = (TCB_t)malloc(sizeof(TCB));
+	if (!main_thread) return -1;
+	main_thread->tid = 0;
+	if (!(main_thread->stack = uthread_ctx_alloc_stack())) return -1;
+	main_thread->state = RUN;
+	running_thread = main_thread;
 	
-	if (!(queue_enqueue(q[ALL], &main))) return -1;
-	main_thread = main;
-
-	return 0;
+	return queue_enqueue(q[ALL], &main_thread);
 }
 
 /*
@@ -90,14 +108,14 @@ int uthread_start(int preempt)
 int uthread_stop(void)
 {
 	/* TODO */
-	if (running_thread.tid != 0 || queue_length(q[READY]) > 1) return -1;
+	if (running_thread->tid != 0 || queue_length(q[READY]) > 1 || queue_length(q[ZOMBIE]) > 0) return -1;
 
-	queue_iterate(q[ALL], destroy_stack_all, NULL, NULL);
+	if (queue_iterate(q[ALL], destroy_stack_all, NULL, NULL) == -1) return -1;
 	for (int i = 0; i < NUM_QUEUE; i++) {
-		if (!(queue_iterate(q[i], dequeue_all, NULL, NULL))) return -1;
+		if (queue_iterate(q[i], dequeue_all, NULL, NULL) == -1) return -1;
 	}
 	for (int i = 0; i < NUM_QUEUE; i++) {
-		if (!(queue_destroy(q[i]))) return -1;
+		if (queue_destroy(q[i]) == -1 ) return -1;
 	}
 	
 	return 0;
@@ -116,21 +134,11 @@ int uthread_stop(void)
 int uthread_create(uthread_func_t func)
 {
 	/* TODO */
-	//
-	TCB new_thread;
-	new_thread.tid = queue_length(q[ALL]);
-	if (!(new_thread.stack = uthread_ctx_alloc_stack())) return -1;
-	if (uthread_ctx_init(&new_thread.ctx, new_thread.stack, func) == -1) return -1;
+	temp = thread_create(queue_length(q[ALL]), func);
+	if (queue_enqueue(q[READY], &temp) == -1) return -1;
+	if (queue_enqueue(q[ALL], &temp) == -1) return -1;
 
-	if (running_thread.state == READY) {
-		new_thread.state = RUN;
-		running_thread = new_thread;
-	} else {
-		new_thread.state = READY;
-		if (!(queue_enqueue(q[READY], &new_thread))) return -1;
-	}
-	if (!(queue_enqueue(q[ALL], &new_thread))) return -1;
-	return new_thread.tid;
+	return temp->tid;
 }
 
 /*
@@ -142,7 +150,17 @@ int uthread_create(uthread_func_t func)
 void uthread_yield(void)
 {
 	/* TODO */
-	
+	TCB_t prev_running = running_thread, *ptr;
+
+	if (queue_dequeue(q[READY], (void**)&ptr) == -1)
+		uthread_ctx_switch(&prev_running->ctx, &main_thread->ctx);
+	running_thread = *ptr;
+	running_thread->state = RUN;
+	if (prev_running != main_thread && prev_running->state != ZOMBIE) {
+		prev_running->state = READY;
+		if (queue_enqueue(q[READY], &prev_running) == -1) exit(1);
+	}
+	uthread_ctx_switch(&prev_running->ctx, &running_thread->ctx);
 }
 
 /*
@@ -153,7 +171,7 @@ void uthread_yield(void)
 uthread_t uthread_self(void)
 {
 	/* TODO */
-	return running_thread.tid;
+	return running_thread->tid;
 }
 
 /*
@@ -173,6 +191,10 @@ uthread_t uthread_self(void)
 void uthread_exit(int retval)
 {
 	/* TODO */
+	running_thread->state = ZOMBIE;
+	running_thread->retval = retval;
+	if (queue_enqueue(q[ZOMBIE], &running_thread) == -1) exit (1);
+	uthread_yield();
 }
 
 /*
@@ -193,9 +215,14 @@ void uthread_exit(int retval)
 int uthread_join(uthread_t tid, int *retval)
 {
 	/* TODO */
-	while (1) {
+	(void)tid; //unused
+	(void)retval; //unused
 
+	while (1) {
+		if (queue_length(q[READY]) < 1) break;
+		uthread_yield();
 	}
-	return -1;
+	
+	return 0;
 }
 
