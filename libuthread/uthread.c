@@ -12,7 +12,6 @@
 #include "uthread.h"
 
 /* TODO */
-// TODO: handle queue function errors, return -1 if needed
 #define NUM_QUEUES 3
 
 enum state{READY, BLOCKED, ZOMBIE, RUNNING};
@@ -79,8 +78,8 @@ int uthread_start(int preempt)
 
 int uthread_stop(void)
 {
-	/* TODO: when to return -1? */
-	if (curr_thr->tid != 0) return -1;
+	/* TODO */
+	if (curr_thr->tid != main_thr->tid) return -1;
 	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) return -1;
 	for (int i = 0; i < NUM_QUEUES; i++) {
 		queue_destroy(scheduler[i]);
@@ -153,8 +152,7 @@ void uthread_exit(int retval)
 int uthread_join(uthread_t tid, int *retval)
 {
 	/* TODO */
-	if (tid == 0) return -1; // main thread check
-	if (tid == uthread_self()) return -1; // self thread check
+	if (tid == 0 || tid == uthread_self()) return -1; // main thread and self thread check
 
 	tcb_t target = NULL;
 
