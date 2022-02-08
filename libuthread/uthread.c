@@ -23,7 +23,7 @@ typedef struct tcb {
 	uthread_ctx_t ctx;
 	void *stack;
 	int retval;
-	int joining_thr_tid; // tid of calling thread that joined it
+	uthread_t joining_thr_tid; // tid of calling thread that joined it
 } tcb;
 
 typedef tcb* tcb_t;
@@ -64,7 +64,7 @@ int uthread_start(int preempt)
 	}
 
 	// "Initialize" main thread
-	main_thr = malloc(sizeof(tcb_t));
+	main_thr = malloc(sizeof(tcb));
 	if (main_thr == NULL) return -1;
 	main_thr->tid = num_thr;
 	main_thr->state = RUNNING;
@@ -94,13 +94,13 @@ int uthread_create(uthread_func_t func)
 {
 	/* TODO */
 	if (num_thr == USHRT_MAX) return -1;
-	tcb_t thr = malloc(sizeof(tcb_t));
+	tcb_t thr = malloc(sizeof(tcb));
 	if (thr == NULL) return -1;
 	thr->tid = ++num_thr;
 	thr->state = READY;
 	thr->stack = uthread_ctx_alloc_stack();
 	if (thr->stack == NULL) return -1;
-	thr->joining_thr_tid = -1;
+	thr->joining_thr_tid = thr->tid;
 	if (uthread_ctx_init(&thr->ctx, thr->stack, func) == -1) return -1;
 	if (queue_enqueue(scheduler[READY], thr) == -1) return -1;
 	return thr->tid;
@@ -138,7 +138,7 @@ void uthread_exit(int retval)
 	
 	// Find joining thread in blocked queue and move to ready queue (if applicable)
 	tcb_t joining_thr = NULL;
-	if (curr_thr->joining_thr_tid != -1) { // if has calling thread to collect its return value
+	if (curr_thr->joining_thr_tid != uthread_self()) { // if has calling thread to collect its return value
 		queue_iterate(scheduler[BLOCKED], find_thread, &curr_thr->joining_thr_tid, (void **)&joining_thr);
 		if (joining_thr) { // unblock joining thread and enqueue into ready queue
 			queue_delete(scheduler[BLOCKED], joining_thr);
@@ -162,8 +162,8 @@ int uthread_join(uthread_t tid, int *retval)
 	queue_iterate(scheduler[READY], find_thread, &tid, (void **)&target);
 	if (target == NULL) queue_iterate(scheduler[BLOCKED], find_thread, &tid, (void **)&target); // search blocked queue if target thread not in ready queue
 	if (target) {
-		if (target->joining_thr_tid == -1) { // if thread tid not already joined
-			target->joining_thr_tid = (int)uthread_self();
+		if (target->joining_thr_tid == target->tid) { // if thread tid not already joined
+			target->joining_thr_tid = uthread_self();
 			curr_thr->state = BLOCKED; // block calling thread
 			queue_enqueue(scheduler[BLOCKED], curr_thr);
 			uthread_yield();
@@ -175,9 +175,9 @@ int uthread_join(uthread_t tid, int *retval)
 	// Search for thread tid in zombie queue and collect retval if found
 	// This block also runs when calling thread is unblocked. When calling thread unblocked, target thread should be a zombie.
 	queue_iterate(scheduler[ZOMBIE], find_thread, &tid, (void **)&target);
-	if (target && target->joining_thr_tid == (int)uthread_self()) {
+	if (target && target->joining_thr_tid == uthread_self()) {
 		queue_delete(scheduler[ZOMBIE], target);
-		*retval = (int)target->retval;
+		if (retval != NULL) *retval = target->retval;
 		uthread_ctx_destroy_stack(target->stack);
 		free(target);
 		target = NULL;
