@@ -72,7 +72,7 @@ int uthread_start(int preempt)
 	
 	// Set current active thread to main thread
 	curr_thr = main_thr;
-
+	printf("%s:%d: Starting uthread library\n", __FILE__, __LINE__);
 	return 0;
 }
 
@@ -80,12 +80,17 @@ int uthread_stop(void)
 {
 	/* TODO */
 	if (curr_thr->tid != main_thr->tid) return -1;
-	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) return -1;
+	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) {
+		printf("%s:%d: There are still threads left. Returning -1...\n", __FILE__, __LINE__);
+		return -1;
+	}
 	for (int i = 0; i < NUM_QUEUES; i++) {
 		queue_destroy(scheduler[i]);
 	}
 	uthread_ctx_destroy_stack(curr_thr->stack);
 	free(curr_thr); // main_thr and curr_thr should point to same thing at this point (main thread's tcb struct)
+	num_thr = 0; // reset when stopping uthread library
+	printf("%s:%d: Stopping uthread library\n", __FILE__, __LINE__);
 	return 0;
 }
 
