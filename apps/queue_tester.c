@@ -46,8 +46,10 @@ void test_enqueue(void)
     int data1 = 10, data2 = 20, data3 = 30;
     queue_t q = queue_create();;
     
+    // Null argument tests
     TEST_ASSERT(queue_enqueue(NULL, &data1) == -1);
     TEST_ASSERT(queue_enqueue(q, NULL) == -1);
+
     TEST_ASSERT(queue_enqueue(q, &data1) == 0);
     TEST_ASSERT(queue_length(q) == 1);
     TEST_ASSERT(queue_enqueue(q, &data2) == 0);
@@ -64,9 +66,13 @@ void test_dequeue(void)
     int data1 = 10, data2 = 20, data3 = 30, *ptr;
     queue_t q = queue_create();
     
+    // Null argument tests
     TEST_ASSERT(queue_dequeue(NULL, (void**)&ptr) == -1);
     TEST_ASSERT(queue_dequeue(q, NULL) == -1);
+
+    // Empty queue test
     TEST_ASSERT(queue_dequeue(q, (void**)&ptr) == -1);
+
     queue_enqueue(q, &data1);
     queue_enqueue(q, &data2);
     queue_enqueue(q, &data3);
@@ -91,9 +97,14 @@ void test_delete(void)
 
     int data1 = 10, data2 = 20, data3 = 10, data4 = 40;
     queue_t q = queue_create();
+
+    // Null arugment tests
     TEST_ASSERT(queue_delete(NULL, &data1) == -1);
     TEST_ASSERT(queue_delete(q, NULL) == -1);
+
+    // Empty queue test
     TEST_ASSERT(queue_delete(q, &data1) == -1);
+
     queue_enqueue(q, &data1);
     queue_enqueue(q, &data2);
     queue_enqueue(q, &data3);
@@ -118,9 +129,14 @@ void test_destroy(void)
     int data = 10, *ptr;
     queue_t q = queue_create();
 
+    // Null argument test
     TEST_ASSERT(queue_destroy(NULL) == -1);
+
+    // Still have items
     queue_enqueue(q, &data);
     TEST_ASSERT(queue_destroy(q) == -1);
+
+    // No more items
     queue_dequeue(q, (void**)&ptr);
     TEST_ASSERT(queue_destroy(q) == 0);
 }
@@ -249,16 +265,22 @@ void test_length(void)
 {
     fprintf(stderr, "*** TEST length ***\n");
 
+    // Null argument test
+    TEST_ASSERT(queue_length(NULL) == -1);
+
     int data1 = 10, data2 = 20, data3 = 30, *ptr;
     queue_t q = queue_create();
+    TEST_ASSERT(queue_length(q) == 0);
 
-    TEST_ASSERT(queue_length(NULL) == -1);
+    // Check length after enqueueing
     queue_enqueue(q, &data1);
     TEST_ASSERT(queue_length(q) == 1);
     queue_enqueue(q, &data2);
     TEST_ASSERT(queue_length(q) == 2);
     queue_enqueue(q, &data3);
     TEST_ASSERT(queue_length(q) == 3);
+
+    // Check length after dequeueing
     queue_dequeue(q, (void**)&ptr);
     TEST_ASSERT(queue_length(q) == 2);
     queue_dequeue(q, (void**)&ptr);
