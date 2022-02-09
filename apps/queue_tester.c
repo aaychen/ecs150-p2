@@ -44,7 +44,7 @@ void test_enqueue(void)
     fprintf(stderr, "*** TEST enqueue ***\n");
 
     int data1 = 10, data2 = 20, data3 = 30;
-    queue_t q = queue_create();;
+    queue_t q = queue_create();
     
     // Null argument tests
     TEST_ASSERT(queue_enqueue(NULL, &data1) == -1);

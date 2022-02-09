@@ -108,11 +108,13 @@ int uthread_stop(void)
 int uthread_create(uthread_func_t func)
 {
 	/* TODO */
+	preempt_disable();
 	if (num_thr == USHRT_MAX) return -1;
 
 	tcb_t thr = malloc(sizeof(tcb));
 	if (thr == NULL) return -1;
 	thr->tid = ++num_thr;
+	preempt_enable();
 	thr->state = READY;
 	thr->stack = uthread_ctx_alloc_stack();
 	if (thr->stack == NULL) return -1;
