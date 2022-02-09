@@ -34,7 +34,7 @@ tcb_t curr_thr; // currently active and running thread
 
 /** 
  * Finds thread that has TID @tid_to_find 
- * @return 0 if no match or thread is already joined; 1 otherwise
+ * @return 0 if no match; 1 if match found
  **/
 int find_thread(queue_t q, void *data, void *tid_to_find)
 {
@@ -80,17 +80,21 @@ int uthread_stop(void)
 {
 	/* TODO */
 	if (curr_thr->tid != main_thr->tid) return -1;
+
+	// Check if there are still threads left
 	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) {
-		printf("%s:%d: There are still threads left. Returning -1...\n", __FILE__, __LINE__);
+		printf("%s:%d: There are still threads left. Returning -1... ", __FILE__, __LINE__);
 		return -1;
 	}
+
 	for (int i = 0; i < NUM_QUEUES; i++) {
 		queue_destroy(scheduler[i]);
 	}
 	uthread_ctx_destroy_stack(curr_thr->stack);
 	free(curr_thr); // main_thr and curr_thr should point to same thing at this point (main thread's tcb struct)
 	num_thr = 0; // reset when stopping uthread library
-	printf("%s:%d: Stopping uthread library\n", __FILE__, __LINE__);
+	printf("%s:%d: Stopping uthread library ", __FILE__, __LINE__);
+
 	return 0;
 }
 
