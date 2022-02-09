@@ -17,6 +17,7 @@
 #define INTERVAL 10		/* number of milliseconds to go off */
 
 void timer_handler(int signum){
+	(void) signum;
 	printf("%s:%d: Inside timer handler function\n", __FILE__, __LINE__);
 	uthread_yield();
 }
