@@ -23,8 +23,8 @@ struct itimerval old_timer; // to store previous timer configuration
 sigset_t block_timer_mask;
 
 void timer_handler(int signum){
-	(void) signum;
-	printf("%s:%d: Inside timer handler function hi hi\n", __FILE__, __LINE__);
+	(void)signum;
+	printf("%s:%d: Inside timer_handler()\n", __FILE__, __LINE__);
 	uthread_yield();
 }
 
@@ -45,10 +45,10 @@ void preempt_start(void)
 	// First timer interrupt after 10 msec
 	new_timer.it_value.tv_sec = 0;
 	new_timer.it_value.tv_usec = INTERVAL * 1000;
-	printf("interval: %ld\n", new_timer.it_value.tv_usec);
 	// Successive timer interrupts every 10 msec after that
 	new_timer.it_interval = new_timer.it_value;
 	setitimer(ITIMER_VIRTUAL, &new_timer, &old_timer);
+	printf("%s:%d: Inside preempt_start()\n", __FILE__, __LINE__);
 }
 
 void preempt_stop(void)
