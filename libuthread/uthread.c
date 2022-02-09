@@ -118,8 +118,8 @@ void uthread_yield(void)
 {
 	/* TODO */
 	tcb_t prev_thr = curr_thr;                                             
-	if (queue_dequeue(scheduler[READY], (void**)&curr_thr) == -1) { // if no more threads in ready queue, back to main thread
-		curr_thr = main_thr;
+	if (queue_dequeue(scheduler[READY], (void**)&curr_thr) == -1) { // if no more threads in ready queue, do nothing and continue
+		return;
 	}
 	// Round-robin put back into ready queue if previous thread is not a zombie or blocked
 	// If previous thread is a zombie or blocked, already enqueued into the appropriate queue (in exit and join functions)
@@ -182,7 +182,7 @@ int uthread_join(uthread_t tid, int *retval)
 	// Search for thread tid in zombie queue and collect retval if found
 	// This block also runs when calling thread is unblocked. When calling thread unblocked, target thread should be a zombie.
 	queue_iterate(scheduler[ZOMBIE], find_thread, &tid, (void **)&target);
-	if (target && target->joining_thr_tid == uthread_self()) {
+	if (target && (target->joining_thr_tid == target->tid || target->joining_thr_tid == uthread_self())) {
 		queue_delete(scheduler[ZOMBIE], target);
 		if (retval != NULL) *retval = target->retval;
 		uthread_ctx_destroy_stack(target->stack);
