@@ -70,9 +70,9 @@ int mjr_thr1(void)
  * Tests two threads joining one (not main) thread
  * In the end, main thread will have collected the two threads.
  */
-void test_multiple_joining_thr(void)
+void test_multiple_thr_joining_one(void)
 {
-    fprintf(stderr, "*** TEST multiple_joining_thr ***\n");
+    fprintf(stderr, "*** TEST multiple_thr_joining_one ***\n");
 
 	uthread_t tid1, tid2;
 	int retval1, retval2;
@@ -84,6 +84,23 @@ void test_multiple_joining_thr(void)
     TEST_ASSERT(retval1 == 1);
     uthread_join(tid2, &retval2);
     TEST_ASSERT(retval2 == 2);
+    TEST_ASSERT(uthread_stop() == 0);
+}
+
+/**
+ * Tests one thread joining multiple threads
+ */
+void test_one_joining_multiple(void)
+{
+    fprintf(stderr, "*** TEST one_joining_multiple ***\n");
+
+	int retval1, retval2;
+
+	uthread_start(0);
+    uthread_join(uthread_create(hello), &retval1);
+    uthread_join(uthread_create(five), &retval2);
+    TEST_ASSERT(retval1 == 0);
+    TEST_ASSERT(retval2 == 5);
     TEST_ASSERT(uthread_stop() == 0);
 }
 
@@ -149,7 +166,8 @@ void test_multiple_thr(void)
 int main(void)
 {
     test_single_thr();
-    test_multiple_joining_thr();
+    test_multiple_thr_joining_one();
+	test_one_joining_multiple();
     test_collect_dead_thr();
     test_multiple_thr();
 	return 0;

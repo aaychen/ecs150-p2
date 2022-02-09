@@ -75,7 +75,7 @@ int uthread_start(int preempt)
 
 	// Check if preemption was enabled
 	if ((scheduler_preempt = preempt)) preempt_start();
-	printf("%s:%d: Starting uthread library\n", __FILE__, __LINE__);
+	// printf("%s:%d: Starting uthread library\n", __FILE__, __LINE__);
 	return 0;
 }
 
@@ -90,7 +90,7 @@ int uthread_stop(void)
 
 	// Check if there are still threads left
 	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) {
-		printf("%s:%d: There are still threads left. Returning -1... ", __FILE__, __LINE__);
+		// printf("%s:%d: There are still threads left. Returning -1... ", __FILE__, __LINE__);
 		return -1;
 	}
 
@@ -100,7 +100,7 @@ int uthread_stop(void)
 	uthread_ctx_destroy_stack(curr_thr->stack);
 	free(curr_thr); // main_thr and curr_thr should point to same thing at this point (main thread's tcb struct)
 	num_thr = 0; // reset when stopping uthread library
-	printf("%s:%d: Stopping uthread library ", __FILE__, __LINE__);
+	// printf("%s:%d: Stopping uthread library ", __FILE__, __LINE__);
 
 	return 0;
 }
@@ -127,6 +127,8 @@ int uthread_create(uthread_func_t func)
 void uthread_yield(void)
 {
 	/* TODO */
+	preempt_disable(); // already yielding so don't force to yield again
+
 	tcb_t prev_thr = curr_thr;
 
 	// Round-robin put back into ready queue if previous thread is not a zombie or blocked
@@ -136,14 +138,12 @@ void uthread_yield(void)
 		queue_enqueue(scheduler[READY], prev_thr);
 	}
 
-	// preempt
-	preempt_disable();
 	if (queue_dequeue(scheduler[READY], (void**)&curr_thr) == -1) { // if no more threads in ready queue, do nothing and continue
 		return;
 	}
 	curr_thr->state = RUNNING;
-	preempt_enable();
 	uthread_ctx_switch(&prev_thr->ctx, &curr_thr->ctx);
+	preempt_enable();
 }
 
 uthread_t uthread_self(void)
@@ -161,13 +161,10 @@ void uthread_exit(int retval)
 	curr_thr->state = ZOMBIE;
 	curr_thr->retval = retval;
 	queue_enqueue(scheduler[ZOMBIE], curr_thr);
-	preempt_enable();
 	
 	// Find joining thread in blocked queue and move to ready queue (if applicable)
 	tcb_t joining_thr = NULL;
 
-	// preempt
-	preempt_disable();
 	if (curr_thr->joining_thr_tid != uthread_self()) { // if has calling thread to collect its return value
 		queue_iterate(scheduler[BLOCKED], find_thread, &curr_thr->joining_thr_tid, (void **)&joining_thr);
 		if (joining_thr) { // unblock joining thread and enqueue into ready queue
@@ -177,7 +174,6 @@ void uthread_exit(int retval)
 		}
 	}
 	preempt_enable();
-
 	uthread_yield();
 }
 
@@ -191,6 +187,7 @@ int uthread_join(uthread_t tid, int *retval)
 	// Search for target thread in active queues
 	queue_iterate(scheduler[READY], find_thread, &tid, (void **)&target);
 	if (target == NULL) queue_iterate(scheduler[BLOCKED], find_thread, &tid, (void **)&target); // search blocked queue if target thread not in ready queue
+	
 	if (target) {
 		if (target->joining_thr_tid == target->tid) { // if thread tid not already joined
 			target->joining_thr_tid = uthread_self();
