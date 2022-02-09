@@ -23,7 +23,6 @@ node_t node_create(void* data) {
 }
 
 struct queue {
-	/* TODO */
 	int length;
 	node_t head;
 	node_t tail;
@@ -31,7 +30,6 @@ struct queue {
 
 queue_t queue_create(void)
 {
-	/* TODO */
 	queue_t new_queue = (queue_t)malloc(sizeof(struct queue));
 	new_queue->length = 0;
 	new_queue->head = new_queue->tail = NULL;
@@ -42,7 +40,6 @@ queue_t queue_create(void)
 
 int queue_destroy(queue_t queue)
 {
-	/* TODO */
 	if (queue == NULL || queue->length != 0) return -1;
 
 	free(queue);
@@ -52,7 +49,6 @@ int queue_destroy(queue_t queue)
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	/* TODO */
 	node_t temp = node_create(data);
 
 	if (queue == NULL || data == NULL || !temp) return -1;
@@ -71,7 +67,6 @@ int queue_enqueue(queue_t queue, void *data)
 
 int queue_dequeue(queue_t queue, void **data)
 {
-	/* TODO */
 	if (queue == NULL || data == NULL || queue->length == 0) return -1;
 
 	node_t temp = queue->head;
@@ -93,7 +88,6 @@ int queue_dequeue(queue_t queue, void **data)
 
 int queue_delete(queue_t queue, void *data)
 {
-	/* TODO */
 	if (queue == NULL || data == NULL || queue->length == 0) return -1;
 
 	node_t temp = queue->head;
@@ -127,7 +121,6 @@ int queue_delete(queue_t queue, void *data)
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
-	/* TODO */
 	if (queue == NULL || func == NULL) return -1;
 
 	node_t current = queue->head;
@@ -149,7 +142,6 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 
 int queue_length(queue_t queue)
 {
-	/* TODO */
 	if (queue == NULL) return -1;
 
 	return queue->length;

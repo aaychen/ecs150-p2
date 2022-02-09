@@ -11,7 +11,6 @@
 #include "queue.h"
 #include "uthread.h"
 
-/* TODO */
 #define NUM_QUEUES 3
 
 enum state{READY, BLOCKED, ZOMBIE, RUNNING};
@@ -53,7 +52,6 @@ int find_thread(queue_t q, void *data, void *tid_to_find)
 
 int uthread_start(int preempt)
 {
-	/* TODO */
 	// Create queues
 	for (int i = 0; i < NUM_QUEUES; i++) {
 		scheduler[i] = queue_create();
@@ -75,14 +73,12 @@ int uthread_start(int preempt)
 
 	// Check if preemption was enabled
 	if ((scheduler_preempt = preempt)) preempt_start();
-	// printf("%s:%d: Starting uthread library\n", __FILE__, __LINE__);
+
 	return 0;
 }
 
 int uthread_stop(void)
 {
-	/* TODO */
-
 	// Disable preemption if needed
 	if (scheduler_preempt == 1) preempt_stop();
 
@@ -90,7 +86,6 @@ int uthread_stop(void)
 
 	// Check if there are still threads left
 	if (queue_length(scheduler[READY]) > 0 || queue_length(scheduler[ZOMBIE]) > 0 || queue_length(scheduler[BLOCKED]) > 0) {
-		// printf("%s:%d: There are still threads left. Returning -1... ", __FILE__, __LINE__);
 		return -1;
 	}
 
@@ -100,14 +95,12 @@ int uthread_stop(void)
 	uthread_ctx_destroy_stack(curr_thr->stack);
 	free(curr_thr); // main_thr and curr_thr should point to same thing at this point (main thread's tcb struct)
 	num_thr = 0; // reset when stopping uthread library
-	// printf("%s:%d: Stopping uthread library ", __FILE__, __LINE__);
 
 	return 0;
 }
 
 int uthread_create(uthread_func_t func)
 {
-	/* TODO */
 	preempt_disable();
 	if (num_thr == USHRT_MAX) return -1;
 
@@ -126,7 +119,6 @@ int uthread_create(uthread_func_t func)
 
 void uthread_yield(void)
 {
-	/* TODO */
 	preempt_disable(); // already yielding so don't force to yield again
 
 	tcb_t prev_thr = curr_thr;
@@ -148,15 +140,11 @@ void uthread_yield(void)
 
 uthread_t uthread_self(void)
 {
-	/* TODO */
 	return curr_thr->tid;
 }
 
 void uthread_exit(int retval)
 {
-	/* TODO */
-
-	// preempt
 	preempt_disable();
 	curr_thr->state = ZOMBIE;
 	curr_thr->retval = retval;
@@ -179,7 +167,6 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
-	/* TODO */
 	if (tid == 0 || tid == uthread_self()) return -1; // main thread and self thread check
 
 	tcb_t target = NULL;
