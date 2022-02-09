@@ -74,7 +74,7 @@ int uthread_start(int preempt)
 	curr_thr = main_thr;
 
 	// Check if preemption was enabled
-	if (scheduler_preempt = preempt) preempt_start();
+	if ((scheduler_preempt = preempt)) preempt_start();
 	printf("%s:%d: Starting uthread library\n", __FILE__, __LINE__);
 	return 0;
 }
@@ -83,10 +83,8 @@ int uthread_stop(void)
 {
 	/* TODO */
 
-	// preempt
-	preempt_disable();
 	// Disable preemption if needed
-	if (scheduler_preempt = preempt) preempt_stop();
+	if (scheduler_preempt == 1) preempt_stop();
 
 	if (curr_thr->tid != main_thr->tid) return -1;
 
@@ -142,8 +140,8 @@ void uthread_yield(void)
 		return;
 	}
 	curr_thr->state = RUNNING;
-	uthread_ctx_switch(&prev_thr->ctx, &curr_thr->ctx);
 	preempt_enable();
+	uthread_ctx_switch(&prev_thr->ctx, &curr_thr->ctx);
 }
 
 uthread_t uthread_self(void)
