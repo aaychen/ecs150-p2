@@ -122,23 +122,28 @@ int thread2(void)
 int thread1(void)
 {
     int retval;
-    uthread_join(uthread_create(thread2), &retval);;
-	uthread_yield(); // thread1 yielded to thread2
+    uthread_join(uthread_create(thread2), &retval);
+    TEST_ASSERT(retval == 2);
+	uthread_yield();
 	printf("%s:%d: thread%d\n", __FILE__, __LINE__, uthread_self());
 	uthread_yield();
 	return 1;
 }
 
-/* Test creating multiple threads and collection of return value */
+/**
+ * Test creating multiple threads and collection of return values 
+ * - Main thread collects thread 1's return value
+ * - Thread 1 collects thread 2's return value
+ * - Thread 3 is not collected
+ */
 void test_multiple_thr(void)
 {
     fprintf(stderr, "*** TEST multiple_thr ***\n");
 	int retval;
-
 	uthread_start(0);
-	uthread_join(uthread_create(thread1), &retval); // main yielded to thread1
+	uthread_join(uthread_create(thread1), &retval);
     TEST_ASSERT(retval == 1);
-    uthread_stop();
+    TEST_ASSERT(uthread_stop() == -1);
 }
 
 int main(void)
@@ -146,6 +151,6 @@ int main(void)
     test_single_thr();
     test_multiple_joining_thr();
     test_collect_dead_thr();
-    // test_multiple_thr();
+    test_multiple_thr();
 	return 0;
 }
