@@ -1,25 +1,39 @@
 # Target library
 lib := libuthread.a
-CC := gcc
-CFLAGS := -Wall -Wextra -Werror
+objs := queue.o uthread.o context.o preempt.o
 
+# Don't print the commands unless explicitly requested with `make V=1`
+ifneq ($(V),1)
+Q = @
+V = 0
+endif
+
+# gcc options
+CC := gcc
+CFLAGS := -Wall -Wextra -Werror -MMD
+
+# ar options
+AR := ar
+ARFLAGS := -rcs
+
+# Default rule
 all: $(lib)
 
-# TODO
-libuthread.a: queue.o uthread.o context.o preempt.o
-	ar rcs libuthread.a queue.o uthread.o context.o preempt.o
+# Include dependencies
+deps := $(patsubst %.o,%.d,$(objs))
+-include $(deps)
 
-queue.o: queue.c queue.h
-	$(CC) $(CFLAGS) -c -o queue.o queue.c
+# Rule for libuthread.a
+$(lib): $(objs)
+	@echo "AR $@"
+	$(Q)$(AR) $(ARFLAGS) $@ $^
 
-uthread.o: uthread.c uthread.h private.h queue.h
-	$(CC) $(CFLAGS) -c -o uthread.o uthread.c
+# Generic rule for compiling objects
+%.o: %.c
+	@echo "CC $@"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-context.o: context.c private.h
-	$(CC) $(CFLAGS) -c -o context.o context.c
-
-preempt.o: preempt.c private.h
-	$(CC) $(CFLAGS) -c -o preempt.o preempt.c
-
+# Cleaning rule
 clean:
-	rm -f libuthread.a queue.o uthread.o context.o preempt.o
+	@echo "clean"
+	$(Q)rm -f $(lib) $(objs) $(deps)
