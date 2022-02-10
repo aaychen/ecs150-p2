@@ -9,7 +9,6 @@ This library, `libuthread`, is a lightweight user-level thread library for Linux
 3. Provide a synchronization mechanism for threads to join other threads
 4. Provide an interrupt-based scheduler
 
----
 ## Implementation
 
 The library's implementation is divided into three stages:
