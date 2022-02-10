@@ -96,9 +96,9 @@ int queue_delete(queue_t queue, void *data)
 	while (temp->data != data) {
 		if(temp->next == NULL) {
 			return -1;
-    } else {
+    	} else {
 			temp = temp->next;             
-    }
+    	}
 	}
 	
 	// if @data is in the queue
