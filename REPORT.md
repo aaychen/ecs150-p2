@@ -17,7 +17,7 @@ The library's implementation is divided into three stages:
 
 1. Implementing the API for a FIFO queue that will be used to schedule threads
    later
-2. Implementing the API for the `uthread` library, which is the core component
+2. Implementing the API for the uthread library, which is the core component
    of this thread library and is responsible for thread management
 3. Implementing the preemption API to periodically interrupt the current thread
    and force it to yield
@@ -41,7 +41,7 @@ operations were tested: `create`, `enqueue`, `dequeue`, `delete`, `destroy`,
 `iterate`, and `length`. For each operation, we tested the operations against
 typical use cases, null argument cases, and edge cases where the queue is empty.
 
-### `uthread` API
+### uthread API
 The uthread API uses the queue API and operations. To create the uthread
 library, we used 3 queues to hold threads of the following statuses: `READY`,
 `BLOCKED`, and `ZOMBIE`. We also represented the threads by defining a thread
@@ -134,5 +134,4 @@ sources that we referenced to complete this project.
   Alarm](https://www.gnu.org/software/libc/manual/html_mono/libc.html#Setting-an-Alarm)
 - [GNU C Library: Blocking
   Signals](https://www.gnu.org/software/libc/manual/html_mono/libc.html#Blocking-Signals)
-- [Details about preemptive vs cooperative
-  threads](https://www.geeksforgeeks.org/difference-between-preemptive-and-cooperative-multitasking/)
+- [Difference between Preemptive and Cooperative Multitasking](https://www.geeksforgeeks.org/difference-between-preemptive-and-cooperative-multitasking/)
