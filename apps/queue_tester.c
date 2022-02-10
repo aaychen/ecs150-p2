@@ -20,9 +20,9 @@ void test_create(void)
 {
 	fprintf(stderr, "*** TEST create ***\n");
 
-    queue_t q = queue_create();
+	queue_t q = queue_create();
 	TEST_ASSERT(q != NULL);
-    TEST_ASSERT(queue_length(q) == 0);
+	TEST_ASSERT(queue_length(q) == 0);
 }
 
 /* Enqueue/dequeue simple */
@@ -305,4 +305,3 @@ int main(void)
 
 	return 0;
 }
-
