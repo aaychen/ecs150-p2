@@ -149,6 +149,7 @@ uthread_t uthread_self(void)
 void uthread_exit(int retval)
 {
 	preempt_disable();
+	
 	curr_thr->state = ZOMBIE;
 	curr_thr->retval = retval;
 	queue_enqueue(scheduler[ZOMBIE], curr_thr);

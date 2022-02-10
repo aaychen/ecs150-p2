@@ -24,7 +24,7 @@ struct itimerval old_timer; // to store previous timer configuration
 sigset_t block_timer_mask;
 
 void timer_handler(int signum){
-	(void) signum;
+	(void)signum;
 	uthread_yield();
 }
 
