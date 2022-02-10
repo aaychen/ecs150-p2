@@ -2,19 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "private.h"
-#include "queue.h"
-#include "uthread.h"
+#include <private.h>
+#include <queue.h>
+#include <uthread.h>
 
-#define TEST_ASSERT(assert)						\
-do {																	\
+#define TEST_ASSERT(assert)				\
+do {									\
 	printf("ASSERT: " #assert " ... ");	\
-	if (assert) {												\
-		printf("PASS\n");									\
-	} else	{														\
-		printf("FAIL\n");									\
-		exit(1);													\
-	}																		\
+	if (assert) {						\
+		printf("PASS\n");				\
+	} else	{							\
+		printf("FAIL\n");				\
+		exit(1);						\
+	}									\
 } while(0)
 
 
@@ -27,7 +27,8 @@ int thread2(void)
 /* Thread that never yields (has infinite loop) */
 int thread1(void)
 {
-	while (1);
+	while (1) 
+		;
 	return 1;
 }
 

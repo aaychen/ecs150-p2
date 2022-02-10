@@ -47,6 +47,7 @@ int find_thread(queue_t q, void *data, void *tid_to_find)
 	if (thr->tid == tid) { // tid match found
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -102,6 +103,7 @@ int uthread_stop(void)
 int uthread_create(uthread_func_t func)
 {
 	preempt_disable();
+
 	if (num_thr == USHRT_MAX) return -1;
 
 	tcb_t thr = malloc(sizeof(tcb));
@@ -114,6 +116,7 @@ int uthread_create(uthread_func_t func)
 	thr->joining_thr_tid = thr->tid;
 	if (uthread_ctx_init(&thr->ctx, thr->stack, func) == -1) return -1;
 	if (queue_enqueue(scheduler[READY], thr) == -1) return -1;
+
 	return thr->tid;
 }
 

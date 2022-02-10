@@ -156,7 +156,9 @@ int thread1(void)
 void test_multiple_thr(void)
 {
     fprintf(stderr, "*** TEST multiple_thr ***\n");
+
 	int retval;
+
 	uthread_start(0);
 	uthread_join(uthread_create(thread1), &retval);
     TEST_ASSERT(retval == 1);
@@ -170,5 +172,6 @@ int main(void)
 	test_one_joining_multiple();
     test_collect_dead_thr();
     test_multiple_thr();
+	
 	return 0;
 }
