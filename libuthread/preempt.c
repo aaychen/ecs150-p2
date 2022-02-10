@@ -56,7 +56,6 @@ void preempt_stop(void)
 	sigaction(SIGVTALRM, &old_act, NULL);
 	// Restore previous timer configuration
 	setitimer(ITIMER_VIRTUAL, &old_timer, NULL);
-	// printf("%s:%d: Inside preempt_stop()\n", __FILE__, __LINE__);
 }
 
 void preempt_enable(void)
