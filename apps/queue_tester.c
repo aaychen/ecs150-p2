@@ -19,12 +19,13 @@ do {									\
 void test_create(void)
 {
 	fprintf(stderr, "*** TEST create ***\n");
+
     queue_t q = queue_create();
 	TEST_ASSERT(q != NULL);
     TEST_ASSERT(queue_length(q) == 0);
 }
 
-/* Enqueue/Dequeue simple */
+/* Enqueue/dequeue simple */
 void test_queue_simple(void)
 {
 	int data = 3, *ptr;
@@ -162,7 +163,7 @@ static int find_item(queue_t q, void *data, void *arg)
 {
     int *a = (int*)data;
     int match = (int)(long)arg;
-    (void)q; //unused
+    (void)q; // unused
 
     if (*a == match)
         return 1;
@@ -197,7 +198,7 @@ void test_iterate(void)
     TEST_ASSERT(queue_length(q) == 9);
 
     /* Find and get the item which is equal to value '5' */
-    ptr = NULL;     // result pointer *must* be reset first
+    ptr = NULL; // result pointer *must* be reset first
     queue_iterate(q, find_item, (void*)5, (void**)&ptr);
     TEST_ASSERT(ptr != NULL);
     TEST_ASSERT(*ptr == 5);

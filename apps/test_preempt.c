@@ -6,15 +6,15 @@
 #include "queue.h"
 #include "uthread.h"
 
-#define TEST_ASSERT(assert)				\
-do {									\
+#define TEST_ASSERT(assert)						\
+do {																	\
 	printf("ASSERT: " #assert " ... ");	\
-	if (assert) {						\
-		printf("PASS\n");				\
-	} else	{							\
-		printf("FAIL\n");				\
-		exit(1);						\
-	}									\
+	if (assert) {												\
+		printf("PASS\n");									\
+	} else	{														\
+		printf("FAIL\n");									\
+		exit(1);													\
+	}																		\
 } while(0)
 
 
@@ -27,14 +27,14 @@ int thread2(void)
 /* Thread that never yields (has infinite loop) */
 int thread1(void)
 {
-	while (1) ;
+	while (1);
 	return 1;
 }
 
 /* Test to see that main thread and thread2 make progress even though thread1 is in an infinite loop */
 void test_infinite_loop(void)
 {
-    fprintf(stderr, "*** TEST infinite_loop ***\n");
+	fprintf(stderr, "*** TEST infinite_loop ***\n");
 
 	uthread_t tid;
 	int retval;

@@ -1,3 +1,4 @@
+#define _POSIX_SOURCE
 #include <signal.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -47,7 +48,6 @@ void preempt_start(void)
 	// Successive timer interrupts every 10 msec after that
 	new_timer.it_interval = new_timer.it_value;
 	setitimer(ITIMER_VIRTUAL, &new_timer, &old_timer);
-	printf("%s:%d: Inside preempt_start()\n", __FILE__, __LINE__);
 }
 
 void preempt_stop(void)
